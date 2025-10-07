@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { Topic, Section, ExplanationSection, PhrasesSection, DialogueSection, ExerciseSection } from './types';
-import ProgressBar from './components/ProgressBar';
+import ProgressBar from './components/ProgressBar.tsx';
 import Dialogue from './components/Dialogue';
 import QuizMC from './components/QuizMC';
 import QuizTrueFalse from './components/QuizTrueFalse';
