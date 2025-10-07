@@ -3,18 +3,19 @@ import React from 'react';
 
 export enum ExerciseType {
   MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
-  DRAG_AND_DROP = 'DRAG_AND_DROP',
+  ORDERING = 'ORDERING',
   TRUE_FALSE = 'TRUE_FALSE',
   HIGHLIGHT_TEXT = 'HIGHLIGHT_TEXT',
 }
 
 export interface Topic {
   id: string;
+  featureType?: 'flashcards'; // Differentiator
   title: string;
   description: string;
   illustration: React.ReactNode;
   color: string;
-  sections: Section[];
+  sections?: Section[]; // Make optional for features
 }
 
 export type Section =
@@ -61,10 +62,11 @@ export interface MultipleChoiceData {
     question: string;
     options: string[];
     answer: string;
+    explanation: string;
   }[];
 }
 
-export interface DragAndDropData {
+export interface OrderingData {
   instruction: string;
   correctOrder: string[];
   scrambled: string[];
@@ -75,6 +77,7 @@ export interface TrueFalseData {
   statements: {
     statement: string;
     isTrue: boolean;
+    explanation: string;
   }[];
 }
 
@@ -85,4 +88,11 @@ export interface HighlightTextData {
     text: string;
     type: 'thesis' | 'argument' | 'reiteration';
   }[];
+}
+
+export interface Flashcard {
+  word: string;
+  type: string; // e.g., 'noun', 'verb', 'phrase'
+  translation: string;
+  example: string;
 }

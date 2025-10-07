@@ -1,93 +1,117 @@
 import React, { useState, useEffect } from 'react';
-import { DragAndDropData } from '../types';
+import { OrderingData } from '../types';
 
-const DragAndDropExercise: React.FC<{ data: DragAndDropData; onComplete: () => void }> = ({ data, onComplete }) => {
-  const [items, setItems] = useState(data.scrambled);
-  const [draggedItem, setDraggedItem] = useState<string | null>(null);
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+const OrderingExercise: React.FC<{ data: OrderingData; onComplete: () => void }> = ({ data, onComplete }) => {
+  const [scrambledItems, setScrambledItems] = useState<string[]>([]);
+  const [userOrder, setUserOrder] = useState<string[]>([]);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
 
+  // Effect to scramble items only once when the component mounts or data changes
   useEffect(() => {
-    // Re-scramble on retry or when data changes
-    setItems([...data.scrambled].sort(() => Math.random() - 0.5));
-    setIsCorrect(null);
+    const initialScramble = [...data.scrambled].sort(() => Math.random() - 0.5);
+    setScrambledItems(initialScramble);
+    handleReset(); // Reset state when data changes
   }, [data]);
 
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, item: string) => {
-    setDraggedItem(item);
-    e.dataTransfer.effectAllowed = 'move';
-    // This is crucial for drag-and-drop to work reliably across browsers
-    e.dataTransfer.setData('text/plain', item);
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetItem: string) => {
-    e.preventDefault();
-    if (!draggedItem || draggedItem === targetItem) {
-      setDraggedItem(null);
-      return;
+  const handleItemClick = (item: string) => {
+    if (isSubmitted || userOrder.includes(item)) {
+      return; // Don't allow changes after submitting or re-selecting
     }
-
-    const newItems = [...items];
-    const draggedIndex = newItems.indexOf(draggedItem);
-    const targetIndex = newItems.indexOf(targetItem);
-
-    if (draggedIndex !== -1 && targetIndex !== -1) {
-      const [removed] = newItems.splice(draggedIndex, 1);
-      newItems.splice(targetIndex, 0, removed);
-      setItems(newItems);
-    }
-    setDraggedItem(null);
+    setUserOrder([...userOrder, item]);
   };
 
-  const handleDragEnd = () => {
-    // Clean up dragged item state if the drop occurs outside a valid target
-    setDraggedItem(null);
-  };
-  
   const handleCheck = () => {
-    const correct = JSON.stringify(items) === JSON.stringify(data.correctOrder);
+    if (userOrder.length !== data.correctOrder.length) return;
+
+    const correct = JSON.stringify(userOrder) === JSON.stringify(data.correctOrder);
     setIsCorrect(correct);
-    if(correct) {
-      setTimeout(() => onComplete(), 1500);
+    setIsSubmitted(true);
+    if (correct) {
+      onComplete();
     }
   };
-  
-  const handleRetry = () => {
-    setItems([...data.scrambled].sort(() => Math.random() - 0.5));
-    setIsCorrect(null);
-  }
+
+  const handleReset = () => {
+    setUserOrder([]);
+    setIsSubmitted(false);
+    setIsCorrect(false);
+  };
+
+  const allItemsSelected = userOrder.length === scrambledItems.length;
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-lg">
-      <p className="text-lg text-gray-700 mb-4">{data.instruction}</p>
-      <div className="space-y-3 p-4 bg-blue-50 rounded-lg border-2 border-dashed border-blue-200">
-        {items.map((item) => (
-          <div
-            key={item}
-            draggable
-            onDragStart={(e) => handleDragStart(e, item)}
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, item)}
-            onDragEnd={handleDragEnd}
-            className={`p-3 bg-white rounded-md shadow-sm cursor-grab active:cursor-grabbing flex items-center transition-opacity ${
-                draggedItem === item ? 'opacity-50' : 'opacity-100'
-            }`}
-          >
-            <i className="fa-solid fa-grip-vertical text-gray-400 mr-3"></i>
-            <span>{item}</span>
-          </div>
-        ))}
+      <p className="text-lg text-slate-700 mb-4">{data.instruction}</p>
+      <div className="space-y-3">
+        {scrambledItems.map((item) => {
+          const orderIndex = userOrder.indexOf(item);
+          const isSelected = orderIndex !== -1;
+
+          return (
+            <div
+              key={item}
+              onClick={() => handleItemClick(item)}
+              className={`p-3 rounded-md shadow-sm flex items-center transition-all duration-200 ${
+                isSelected ? 'bg-blue-100 text-slate-500' : 'bg-slate-50 cursor-pointer hover:bg-slate-100'
+              }`}
+            >
+              <div
+                className={`w-8 h-8 mr-4 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0 ${
+                  isSelected ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-500'
+                }`}
+              >
+                {isSelected ? orderIndex + 1 : '?'}
+              </div>
+              <span>{item}</span>
+            </div>
+          );
+        })}
       </div>
-      <div className="mt-6 text-center">
-        {isCorrect === null && <button onClick={handleCheck} className="bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition">Periksa Urutan</button>}
-        {isCorrect === true && <div className="p-3 rounded-lg bg-green-100 text-green-800 font-semibold">Benar! Urutan percakapan sudah logis.</div>}
-        {isCorrect === false && (
-          <div className="flex flex-col items-center gap-4">
-             <div className="p-3 rounded-lg bg-red-100 text-red-800 font-semibold">Salah, coba susun kembali.</div>
-            <button onClick={handleRetry} className="bg-orange-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-orange-600 transition">Coba Lagi</button>
+
+      <div className="mt-6">
+        {!isSubmitted ? (
+          <div className="flex items-center justify-center gap-4">
+            <button
+              onClick={handleReset}
+              className="bg-slate-400 text-white font-bold py-2 px-6 rounded-lg hover:bg-slate-500 transition"
+            >
+              <i className="fa-solid fa-rotate-right mr-2"></i>
+              Reset
+            </button>
+            <button
+              onClick={handleCheck}
+              disabled={!allItemsSelected}
+              className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition disabled:bg-slate-300 disabled:cursor-not-allowed"
+            >
+              Periksa Urutan
+            </button>
+          </div>
+        ) : isCorrect ? (
+          <div className="text-center">
+            <div className="p-3 mb-4 rounded-lg bg-green-100 text-green-800 font-semibold">
+              Benar! Urutan percakapan sudah logis.
+            </div>
+             <button
+              onClick={handleReset}
+              className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition"
+            >
+              <i className="fa-solid fa-rotate-right mr-2"></i>
+              Reset Latihan
+            </button>
+          </div>
+        ) : (
+          <div className="text-center">
+            <div className="p-3 mb-4 rounded-lg bg-red-100 text-red-800 font-semibold">
+              Salah, coba susun kembali.
+            </div>
+            <button
+              onClick={handleReset}
+              className="bg-orange-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-orange-600 transition"
+            >
+              <i className="fa-solid fa-rotate-right mr-2"></i>
+              Reset Latihan
+            </button>
           </div>
         )}
       </div>
@@ -95,4 +119,4 @@ const DragAndDropExercise: React.FC<{ data: DragAndDropData; onComplete: () => v
   );
 };
 
-export default DragAndDropExercise;
+export default OrderingExercise;

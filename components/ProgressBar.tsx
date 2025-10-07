@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface ProgressBarProps {
@@ -10,13 +9,13 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress, color }) => {
   const progressPercentage = Math.round(progress * 100);
 
   return (
-    <div className="w-full bg-gray-200 rounded-full h-4 my-4 shadow-inner">
+    <div className="w-full bg-slate-200 rounded-full h-5 my-4">
       <div
-        className={`${color} h-4 rounded-full transition-all duration-500 ease-out flex items-center justify-center`}
+        className={`${color} h-5 rounded-full transition-all duration-500 ease-out flex items-center justify-center`}
         style={{ width: `${progressPercentage}%` }}
       >
-        <span className="text-xs font-bold text-white">
-          {progressPercentage}%
+        <span className="text-sm font-bold text-white">
+          {progressPercentage > 10 ? `${progressPercentage}%` : ''}
         </span>
       </div>
     </div>

@@ -1,4 +1,3 @@
-
 import React, { useCallback } from 'react';
 import { DialogueSection } from '../types';
 
@@ -16,7 +15,7 @@ const Dialogue: React.FC<{ data: DialogueSection }> = ({ data }) => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg">
-      <p className="text-gray-600 italic mb-4">{data.intro}</p>
+      <p className="text-slate-600 italic mb-4">{data.intro}</p>
       <div className="space-y-4">
         {data.lines.map((line, index) => (
           <div
@@ -33,8 +32,8 @@ const Dialogue: React.FC<{ data: DialogueSection }> = ({ data }) => {
 
             <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${
                 line.speaker === 'Rina' || line.speaker === 'Anna' || line.speaker === 'Sinta'
-                ? 'bg-gray-200 text-gray-800'
-                : 'bg-blue-500 text-white'
+                ? 'bg-slate-200 text-slate-800'
+                : 'bg-blue-600 text-white'
             }`}>
               <p className="font-bold mb-1">{line.speaker}</p>
               <p>{line.text}</p>
@@ -46,7 +45,7 @@ const Dialogue: React.FC<{ data: DialogueSection }> = ({ data }) => {
 
             <button
               onClick={() => playAudio(line.text)}
-              className="text-gray-400 hover:text-blue-500 transition self-center"
+              className="text-slate-400 hover:text-blue-600 transition self-center"
               aria-label={`Play audio for ${line.text}`}
             >
               <i className="fas fa-volume-high"></i>
